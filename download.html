@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Facebook Video Downloader</title>
+<style>
+body{font-family:sans-serif;background:#f4f4f4;padding:20px}
+.box{max-width:700px;margin:auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,.1)}
+input{width:100%;padding:10px;margin-top:10px;font-size:15px;border:1px solid #ccc;border-radius:6px}
+button{margin-top:10px;padding:10px 15px;border:0;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer}
+#result{margin-top:15px}
+a.download{padding:10px 14px;background:#16a34a;color:white;text-decoration:none;border-radius:6px;display:inline-block;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>Facebook Video Downloader</h2>
+<p>Masukkan URL video Facebook (publik) dan coba ambil direct link.</p>
+
+<input id="fbUrl" type="text" placeholder="https://www.facebook.com/...">
+<button onclick="getVideo()">Get Video</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+async function getVideo(){
+    const url = document.getElementById("fbUrl").value.trim();
+    const result = document.getElementById("result");
+
+    if(!url){
+        result.innerHTML = "<span style='color:red'>Isi URL dulu.</span>";
+        return;
+    }
+
+    result.innerHTML = "Mengambil data...";
+
+    try {
+        const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+        const resp = await fetch(proxy);
+        const html = await resp.text();
+
+        // cari og:video
+        const match = html.match(/<meta property="og:video" content="([^"]+)"/);
+
+        if(match && match[1]){
+            const direct = match[1].replace(/&amp;/g, "&");
+            result.innerHTML = `
+                <div>Video ditemukan:</div>
+                <a class="download" href="${direct}" target="_blank">Download Video</a>
+            `;
+        } else {
+            result.innerHTML = "<span style='color:red'>Tidak bisa menemukan direct URL (mungkin video private).</span>";
+        }
+    } catch(e){
+        result.innerHTML = "<span style='color:red'>Gagal mengambil data.</span>";
+    }
+}
+</script>
+</body>
+</html>
